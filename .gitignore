@@ -1,0 +1,15 @@
+build/
+dist/
+__pycache__/
+*.py[cod]
+*.pcm
+*.p12
+*.jks
+*.keystore
+*.pem
+.env
+.env.*
+.venv/
+.coverage
+.pytest_cache/
+.DS_Store

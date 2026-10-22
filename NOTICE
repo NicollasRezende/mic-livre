@@ -1,0 +1,16 @@
+Mic Livre
+Copyright (C) 2026 NicollasRezende and contributors
+SPDX-License-Identifier: GPL-3.0-only
+
+O código deste repositório é licenciado sob a GNU GPL versão 3.
+Veja LICENSE para os termos completos.
+
+Componentes externos opcionais não estão incluídos neste repositório:
+- DeepFilterNet: Copyright Hendrik Schröter, MIT ou Apache-2.0.
+  https://github.com/Rikorose/DeepFilterNet
+- GTK/PyGObject, PipeWire/PulseAudio e Android SDK pertencem a seus
+  respectivos projetos e são usados sob suas próprias licenças.
+
+Mic Livre é um projeto independente. Não inclui o programa proprietário
+Micstream nem exige sua instalação. Existe detecção de uma instalação
+local compatível de DeepFilterNet como opção de processamento de áudio.
