@@ -8,7 +8,7 @@ O script `./publicar-github.sh` usa o GitHub CLI autenticado no seu terminal par
 2. Criar `mic-livre` como repositório **público** na conta autenticada, sem sobrescrever outro `origin`.
 3. Enviar o código e a tag; configurar merges por squash/rebase.
 4. Proteger `main`: uma aprovação, checks `tests` e `android`, conversas resolvidas, sem force-push ou exclusão. Administradores mantêm possibilidade de intervenção.
-5. Publicar o APK na release e verificar visibilidade pública, proteção e presença do asset.
+5. Publicar o APK na release e verificar visibilidade pública, proteção, commit remoto e SHA-256 do APK publicado.
 6. Mostrar os links reais retornados pelo GitHub.
 
 Requer `git`, `gh` e acesso à rede. Para conferir o plano sem chamadas externas:

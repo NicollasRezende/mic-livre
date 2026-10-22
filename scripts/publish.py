@@ -1,11 +1,13 @@
 """Publish an already-reviewed checkout using the caller's GitHub CLI session."""
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import re
 import shutil
 import subprocess
 import sys
+import tempfile
 
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -22,6 +24,22 @@ def validate_name(owner,name):
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9-]{0,38}',owner): raise PublishError('Conta GitHub inválida')
     if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_.-]{0,99}',name): raise PublishError('Nome de repositório inválido')
     return owner+'/'+name
+
+def verify_asset(slug,data,apk):
+    asset=next((item for item in data.get('assets',[]) if item['name']==apk.name),None)
+    if asset is None: raise PublishError('Release sem o APK esperado; arquivos existentes não foram sobrescritos.')
+    expected=hashlib.sha256(apk.read_bytes()).hexdigest()
+    digest=asset.get('digest') or ''
+    if digest.startswith('sha256:'):
+        actual=digest.removeprefix('sha256:')
+    else:
+        with tempfile.TemporaryDirectory(prefix='mic-livre-release-') as directory:
+            run('gh','release','download','v0.2.1','--repo',slug,'--pattern',apk.name,'--dir',directory)
+            downloaded=Path(directory)/apk.name
+            if not downloaded.is_file(): raise PublishError('O download do APK publicado não foi confirmado')
+            actual=hashlib.sha256(downloaded.read_bytes()).hexdigest()
+    if actual!=expected:
+        raise PublishError('SHA-256 do APK publicado difere do APK local. Nenhum asset foi sobrescrito.')
 
 def main(argv=None):
     parser=argparse.ArgumentParser(description='Criar repo público, enviar código/APK e configurar revisão de PRs')
@@ -87,8 +105,9 @@ def main(argv=None):
             '--repo',slug,'--verify-tag','--title','Mic Livre 0.2.1',
             '--notes-file',str(ROOT/'docs/releases/0.2.1.md'))
     data=json.loads(run('gh','api','repos/'+slug+'/releases/tags/v0.2.1').stdout)
-    if not any(asset['name']=='mic-livre-0.2.1.apk' for asset in data.get('assets',[])):
-        raise PublishError('Release encontrada, mas o APK esperado não foi confirmado; não sobrescrevemos arquivos existentes.')
+    verify_asset(slug,data,ROOT/'apk/mic-livre-0.2.1.apk')
+    if run('gh','api','repos/'+slug+'/commits/main','--jq','.sha').stdout.strip()!=tag_sha:
+        raise PublishError('O commit público da main não corresponde ao checkout local')
     repo=json.loads(run('gh','repo','view',slug,'--json','url,isPrivate').stdout)
     if repo['isPrivate']: raise PublishError('O GitHub não confirmou visibilidade pública')
     print('\nRepositório público verificado: '+repo['url'])
